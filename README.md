@@ -12,10 +12,13 @@ More details could be found in its [document](https://mmpretrain.readthedocs.io/
 Install requirements by
 
 ```bash
+# for Ubuntu 20.04.6 LTS
 $ conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 $ pip install pillow==4.1.0
 $ pip install mmcls==0.25.0 openmim scipy scikit-learn ftfy regex tqdm
 $ mim install mmcv-full==1.6.0
+
+# for windows 10
 ```
 
 We suggest you install PyTorch successfully first, then install OpenMMLab packages and their dependencies.
