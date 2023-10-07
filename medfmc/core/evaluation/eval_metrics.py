@@ -11,7 +11,7 @@ def compute_auc(cls_scores, cls_labels):
         try:
             auc_per_class = metrics.roc_auc_score(labels_per_class,
                                                   scores_per_class)
-            # print('class {} auc = {:.2f}'.format(i + 1, auc_per_class * 100))
+            print('class {} auc = {:.2f}'.format(i + 1, auc_per_class * 100))
         except ValueError:
             pass
         cls_aucs.append(auc_per_class * 100)

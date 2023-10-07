@@ -19,6 +19,12 @@ from mmcv.runner import get_dist_info, init_dist
 
 
 def parse_args():
+    """
+    
+    The parse_args() function is designed to parse command-line arguments provided when running the script. 
+    Its purpose is to allow users to specify various configuration options when training a model. 
+    
+    """
     parser = argparse.ArgumentParser(description='Train a model')
     parser.add_argument('config', help='train config file path')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
@@ -95,7 +101,17 @@ def main():
     # set multi-process settings
     setup_multi_processes(cfg)
 
-    # set cudnn_benchmark
+    """
+        set cudnn_benchmark
+
+        1. Algorithm Selection: 
+            When cudnn.benchmark is set to True, CuDNN will use an auto-tuner to find the best algorithm for the hardware configuration.
+        
+        2. Performance Improvements:
+            By setting it to True, it can improve compute performance during training and inference on fixed-size data, 
+            but it can lead to increased GPU memory consumption.
+
+    """
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
 
@@ -105,10 +121,11 @@ def main():
         cfg.work_dir = args.work_dir
     elif cfg.get('work_dir', None) is None:
         # use config filename as default work_dir if cfg.work_dir is None
-        cfg.work_dir = osp.join('./work_dirs',
-                                osp.splitext(osp.basename(args.config))[0])
+        cfg.work_dir = osp.join('./work_dirs', osp.splitext(osp.basename(args.config))[0])
+    
     if args.resume_from is not None:
         cfg.resume_from = args.resume_from
+    
     if args.gpus is not None:
         cfg.gpu_ids = range(1)
         warnings.warn('`--gpus` is deprecated because we only support '
@@ -120,6 +137,7 @@ def main():
                       'Because we only support single GPU mode in '
                       'non-distributed training. Use the first GPU '
                       'in `gpu_ids` now.')
+    
     if args.gpus is None and args.gpu_ids is None:
         cfg.gpu_ids = [args.gpu_id]
 
@@ -138,8 +156,10 @@ def main():
 
     # create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
+    
     # dump config
     cfg.dump(osp.join(cfg.work_dir, osp.basename(args.config)))
+    
     # init the logger before other steps
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     log_file = osp.join(cfg.work_dir, f'{timestamp}.log')
@@ -148,6 +168,7 @@ def main():
     # init the meta dict to record some important information such as
     # environment info and seed, which will be logged
     meta = dict()
+    
     # log env info
     env_info_dict = collect_env()
     env_info = '\n'.join([(f'{k}: {v}') for k, v in env_info_dict.items()])
