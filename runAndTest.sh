@@ -2,7 +2,7 @@
 export PYTHONPATH=$PWD:$PYTHONPATH
 # Training
 # you can choose a config file like `configs/densenet/dense121_chest.py to train its model
-# python tools/train.py configs/densenet/dense121_chest.py
+python tools/train.py configs/densenet/dense121_chest.py
 
 # Evaluation
 # Endo and ChestDR utilize mAP as metric
