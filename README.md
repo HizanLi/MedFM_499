@@ -13,10 +13,12 @@ Install requirements by
 
 ```bash
 # for Ubuntu 20.04.6 LTS
-conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
+
+conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia #Change this depend on your cuda version
+
 pip install mmcls==0.25.0 openmim scipy scikit-learn ftfy regex tqdm
 mim install mmcv-full==1.6.0
-
+pip install yapf==0.40.1
 # for windows 10
 ```
 
