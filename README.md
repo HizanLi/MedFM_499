@@ -12,20 +12,26 @@ bash installPackage.sh
 
 ```
 
-We suggest you install PyTorch successfully first, then install OpenMMLab packages and their dependencies.
+For ubuntu newcomer, I suggest you follow tutorial in this [link](https://blog.csdn.net/m0_58678659/article/details/122932488). 
+
+One key take away is that make sure your Nvidia driver is compatible with with your cuda-toolkit. And your cuda-toolkit is compatible with the version of pytorch you installed. 
+
+Previous version of pytorch can be found [here](https://pytorch.org/get-started/previous-versions/).
+
+Afterwards, you install PyTorch successfully first, then install OpenMMLab packages and their dependencies.
 
 Moreover, you can use other Computer Vision or other foundation models such as [EVA](https://github.com/baaivision/EVA) and [CLIP](https://github.com/openai/CLIP).
 
-## 📊 Results
+## 📊 Results(working)
 
 The results of ChestDR, ColonPath and Endo in MedFMC dataset and their corresponding configs on each task are shown as below.
 
-### Few-shot Learning Results
+### Few-shot Learning Results(working)
 
 We utilize [Visual Prompt Tuning](https://github.com/KMnP/vpt) method as the few-shot learning baseline, whose backbone is Swin Transformer.
 The results are shown as below:
 
-#### ChestDR
+#### ChestDR(working)
 
 | N Shot | Crop Size | Epoch |  mAP  |  AUC  |                                      Config                                      |
 | :----: | :-------: | :---: | :---: | :---: | :------------------------------------------------------------------------------: |
@@ -33,7 +39,7 @@ The results are shown as below:
 |   5    |  384x384  |  20   | 17.05 | 64.86 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_chest_adamw.py)  |
 |   10   |  384x384  |  20   | 19.01 | 66.68 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_chest_adamw.py) |
 
-#### ColonPath
+#### ColonPath(working)
 
 | N Shot | Crop Size | Epoch |  Acc  |  AUC  |                                      Config                                      |
 | :----: | :-------: | :---: | :---: | :---: | :------------------------------------------------------------------------------: |
@@ -41,7 +47,7 @@ The results are shown as below:
 |   5    |  384x384  |  20   | 89.29 | 96.07 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_colon_adamw.py)  |
 |   10   |  384x384  |  20   | 91.21 | 97.14 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_colon_adamw.py) |
 
-#### Endo
+#### Endo(working)
 
 | N Shot | Crop Size | Epoch |  mAP  |  AUC  |                                     Config                                      |
 | :----: | :-------: | :---: | :---: | :---: | :-----------------------------------------------------------------------------: |
@@ -49,12 +55,12 @@ The results are shown as below:
 |   5    |  384x384  |  20   | 23.88 | 67.48 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_endo_adamw.py)  |
 |   10   |  384x384  |  20   | 25.62 | 71.41 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_endo_adamw.py) |
 
-### Transfer Learning on 20% (Fully Supervised Task)
+### Transfer Learning on 20% (Fully Supervised Task)(working)
 
 Noted that MedFMC mainly focuses on few-shot learning i.e., transfer learning task.
 Thus, fully supervised learning tasks below only use 20% training data to make corresponding comparisons.
 
-#### ChestDR
+#### ChestDR(working)
 
 |    Backbone     | Crop Size | Epoch |  mAP  |  AUC  |                        Config                         |
 | :-------------: | :-------: | :---: | :---: | :---: | :---------------------------------------------------: |
@@ -62,7 +68,7 @@ Thus, fully supervised learning tasks below only use 20% training data to make c
 | EfficientNet-B5 |  384x384  |  20   | 29.08 | 77.21 |    [config](configs_backup/efficientnet/eff-b5_chest.py)     |
 |     Swin-B      |  384x384  |  20   | 31.07 | 78.56 | [config](configs_backup/swin_transformer/swin-base_chest.py) |
 
-#### ColonPath
+#### ColonPath(working)
 
 |    Backbone     | Crop Size | Epoch |  Acc  |  AUC  |                        Config                         |
 | :-------------: | :-------: | :---: | :---: | :---: | :---------------------------------------------------: |
@@ -70,7 +76,7 @@ Thus, fully supervised learning tasks below only use 20% training data to make c
 | EfficientNet-B5 |  384x384  |  20   | 94.04 | 98.58 |    [config](configs_backup/efficientnet/eff-b5_colon.py)     |
 |     Swin-B      |  384x384  |  20   | 94.68 | 98.35 | [config](configs_backup/swin_transformer/swin-base_colon.py) |
 
-#### Endo
+#### Endo(working)
 
 |    Backbone     | Crop Size | Epoch |  mAP  |  AUC  |                        Config                        |
 | :-------------: | :-------: | :---: | :---: | :---: | :--------------------------------------------------: |
@@ -90,7 +96,14 @@ Prepare data following [MMClassification](https://github.com/open-mmlab/mmclassi
 
 ```text
 data/
-├── MedFMC
+├── MedFMC_test
+│   ├── chest
+│   │   └── images
+│   ├── colon
+│   │   └── images
+│   └── endo
+│       └── images
+├── MedFMC_train
 │   ├── chest
 │   │   ├── images
 │   │   ├── chest_X-shot_train_expY.txt
@@ -98,23 +111,34 @@ data/
 │   │   ├── train_20.txt
 │   │   ├── val_20.txt
 │   │   ├── trainval.txt
-│   │   ├── test_WithLabel.txt
+│   │   └── test_WithLabel.txt
 │   ├── colon
 │   │   ├── images
-│   │   ├── colon_X-shot_train_expY.txt
-│   │   ├── colon_X-shot_val_expY.txt
+│   │   ├── chest_X-shot_train_expY.txt
+│   │   ├── chest_X-shot_val_expY.txt
 │   │   ├── train_20.txt
 │   │   ├── val_20.txt
 │   │   ├── trainval.txt
-│   │   ├── test_WithLabel.txt
-│   ├── endo
+│   │   └── test_WithLabel.txt
+│   └── endo
 │   │   ├── images
-│   │   ├── endo_X-shot_train_expY.txt
-│   │   ├── endo_X-shot_val_expY.txt
+│   │   ├── chest_X-shot_train_expY.txt
+│   │   ├── chest_X-shot_val_expY.txt
 │   │   ├── train_20.txt
 │   │   ├── val_20.txt
 │   │   ├── trainval.txt
-│   │   ├── test_WithLabel.txt
+│       └── test_WithLabel.txt
+├── MedFMC_trainval_annotation
+│   ├── chest
+│   ├── colon
+│   └── endo
+└── MedFMC_validation
+    ├── chest
+    │   └── images
+    ├── colon
+    │   └── images
+    └── endo
+        └── images
 ```
 
 Noted that the `.txt` files includes data split information for fully supervised learning and few-shot learning tasks.
@@ -131,7 +155,7 @@ Where `N_shot` is 1,5 and 10, respectively, the shot is of patient(i.e., 1-shot 
 
 The `images` in each dataset folder contains its images, which could be achieved from original dataset.
 
-### Training and evaluation using OpenMMLab codebases.
+### Training and evaluation using OpenMMLab codebases.(working)
 
 In this repository we provided many config files for fully supervised task (only uses 20% of original traning set, please check out the `.txt` files which split dataset)
 and few-shot learning task.
@@ -160,7 +184,7 @@ python tools/test.py $CONFIG $CHECKPOINT --metrics AUC_multiclass
 
 The repository is built upon [MMClassification/MMPretrain](https://github.com/open-mmlab/mmpretrain/tree/master). More details could be found in its [document](https://mmpretrain.readthedocs.io/en/mmcls-0.x/).
 
-### Generating Submission results of Validation Phase
+### Generating Submission results of Validation Phase(working)
 
 Noted:
 
