@@ -40,8 +40,8 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type='Chest19',
-        data_prefix='data/MedFMC/chest/images',
-        ann_file='data/MedFMC/chest/chest_1-shot_train.txt',
+        data_prefix='data/MedFMC_train/chest/images',
+        ann_file='data/MedFMC_train/chest/chest_1-shot_train_exp{exp_num}.txt',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(
@@ -61,8 +61,8 @@ data = dict(
         ]),
     val=dict(
         type='Chest19',
-        data_prefix='data/MedFMC/chest/images',
-        ann_file='data/MedFMC/chest/chest_1-shot_val.txt',
+        data_prefix='data/MedFMC_train/chest/images',
+        ann_file='data/MedFMC_train/chest/chest_1-shot_val_exp{exp_num}.txt',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(
@@ -80,8 +80,8 @@ data = dict(
         ]),
     test=dict(
         type='Chest19',
-        data_prefix='data/MedFMC/chest/images',
-        ann_file='data/MedFMC/chest/test_WithLabel.txt',
+        data_prefix='data/MedFMC_train/chest/images',
+        ann_file='data/MedFMC_train/chest/test_WithLabel.txt',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(

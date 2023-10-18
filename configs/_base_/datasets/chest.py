@@ -27,18 +27,18 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type=dataset_type,
-        data_prefix='data/MedFMC/chest/images',
-        ann_file='data/MedFMC/chest/train_20.txt',
+        data_prefix='data/MedFMC_train/chest/images',
+        ann_file='data/MedFMC_train/chest/train_20.txt',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        data_prefix='data/MedFMC/chest/images',
-        ann_file='data/MedFMC/chest/val_20.txt',
+        data_prefix='data/MedFMC_train/chest/images',
+        ann_file='data/MedFMC_train/chest/val_20.txt',
         pipeline=test_pipeline),
     test=dict(
         # replace `data/val` with `data/test` for standard test
         type=dataset_type,
-        data_prefix='data/MedFMC/chest/images',
-        ann_file='data/MedFMC/chest/test_WithLabel.txt',
+        data_prefix='data/MedFMC_train/chest/images',
+        ann_file='data/MedFMC_train/chest/test_WithLabel.txt',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='mAP', save_best='auto')

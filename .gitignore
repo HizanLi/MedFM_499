@@ -103,8 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-data/
-data
+# data/
+# data
+*.png
 .vscode
 .idea
 .DS_Store
