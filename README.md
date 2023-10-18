@@ -1,11 +1,7 @@
 # NeurIPS 2023 - MedFM: Foundation Model Prompting for Medical Image Classification Challenge 2023
 
-A naive baseline and submission demo for the [Foundation Model Prompting for Medical Image Classification Challenge 2023 (MedFM)](https://medfm2023.grand-challenge.org/medfm2023/).
+A naive baseline and submission demo for the [Medical Image Classification Challenge 2023 (MedFM)](https://medfm2023.grand-challenge.org/medfm2023/).
 
-## ✨ Notification
-
-Please check out [master branch](https://github.com/openmedlab/MedFM/tree/master). Third party implementation of MedFMC baseline is supported! It is based on the [MMPreTrain](https://github.com/open-mmlab/mmpretrain), with backbone of **`ViT-cls`**, **`ViT-eva02`**, **`ViT-dinov2`**, **`Swin-cls`** and **`ViT-clip`**.
-More details could be found in its [document](https://mmpretrain.readthedocs.io/en/latest/index.html). Thanks [Ezra-Yu](https://github.com/Ezra-Yu) for this excellent work.
 
 ## 🛠️ Installation
 
@@ -33,25 +29,25 @@ The results are shown as below:
 
 | N Shot | Crop Size | Epoch |  mAP  |  AUC  |                                      Config                                      |
 | :----: | :-------: | :---: | :---: | :---: | :------------------------------------------------------------------------------: |
-|   1    |  384x384  |  20   | 13.14 | 56.49 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_1-shot_chest_adamw.py)  |
-|   5    |  384x384  |  20   | 17.05 | 64.86 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_chest_adamw.py)  |
-|   10   |  384x384  |  20   | 19.01 | 66.68 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_chest_adamw.py) |
+|   1    |  384x384  |  20   | 13.14 | 56.49 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_1-shot_chest_adamw.py)  |
+|   5    |  384x384  |  20   | 17.05 | 64.86 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_chest_adamw.py)  |
+|   10   |  384x384  |  20   | 19.01 | 66.68 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_chest_adamw.py) |
 
 #### ColonPath
 
 | N Shot | Crop Size | Epoch |  Acc  |  AUC  |                                      Config                                      |
 | :----: | :-------: | :---: | :---: | :---: | :------------------------------------------------------------------------------: |
-|   1    |  384x384  |  20   | 77.60 | 84.69 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_1-shot_colon_adamw.py)  |
-|   5    |  384x384  |  20   | 89.29 | 96.07 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_colon_adamw.py)  |
-|   10   |  384x384  |  20   | 91.21 | 97.14 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_colon_adamw.py) |
+|   1    |  384x384  |  20   | 77.60 | 84.69 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_1-shot_colon_adamw.py)  |
+|   5    |  384x384  |  20   | 89.29 | 96.07 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_colon_adamw.py)  |
+|   10   |  384x384  |  20   | 91.21 | 97.14 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_colon_adamw.py) |
 
 #### Endo
 
 | N Shot | Crop Size | Epoch |  mAP  |  AUC  |                                     Config                                      |
 | :----: | :-------: | :---: | :---: | :---: | :-----------------------------------------------------------------------------: |
-|   1    |  384x384  |  20   | 19.70 | 62.18 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_1-shot_endo_adamw.py)  |
-|   5    |  384x384  |  20   | 23.88 | 67.48 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_endo_adamw.py)  |
-|   10   |  384x384  |  20   | 25.62 | 71.41 | [config](configs/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_endo_adamw.py) |
+|   1    |  384x384  |  20   | 19.70 | 62.18 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_1-shot_endo_adamw.py)  |
+|   5    |  384x384  |  20   | 23.88 | 67.48 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_5-shot_endo_adamw.py)  |
+|   10   |  384x384  |  20   | 25.62 | 71.41 | [config](configs_backup/swin-b_vpt/in21k-swin-b_vpt5_bs4_lr5e-2_10-shot_endo_adamw.py) |
 
 ### Transfer Learning on 20% (Fully Supervised Task)
 
@@ -62,25 +58,25 @@ Thus, fully supervised learning tasks below only use 20% training data to make c
 
 |    Backbone     | Crop Size | Epoch |  mAP  |  AUC  |                        Config                         |
 | :-------------: | :-------: | :---: | :---: | :---: | :---------------------------------------------------: |
-|   DenseNet121   |  384x384  |  20   | 24.48 | 75.25 |     [config](configs/densenet/dense121_chest.py)      |
-| EfficientNet-B5 |  384x384  |  20   | 29.08 | 77.21 |    [config](configs/efficientnet/eff-b5_chest.py)     |
-|     Swin-B      |  384x384  |  20   | 31.07 | 78.56 | [config](configs/swin_transformer/swin-base_chest.py) |
+|   DenseNet121   |  384x384  |  20   | 24.48 | 75.25 |     [config](configs_backup/densenet/dense121_chest.py)      |
+| EfficientNet-B5 |  384x384  |  20   | 29.08 | 77.21 |    [config](configs_backup/efficientnet/eff-b5_chest.py)     |
+|     Swin-B      |  384x384  |  20   | 31.07 | 78.56 | [config](configs_backup/swin_transformer/swin-base_chest.py) |
 
 #### ColonPath
 
 |    Backbone     | Crop Size | Epoch |  Acc  |  AUC  |                        Config                         |
 | :-------------: | :-------: | :---: | :---: | :---: | :---------------------------------------------------: |
-|   DenseNet121   |  384x384  |  20   | 92.73 | 98.27 |     [config](configs/densenet/dense121_colon.py)      |
-| EfficientNet-B5 |  384x384  |  20   | 94.04 | 98.58 |    [config](configs/efficientnet/eff-b5_colon.py)     |
-|     Swin-B      |  384x384  |  20   | 94.68 | 98.35 | [config](configs/swin_transformer/swin-base_colon.py) |
+|   DenseNet121   |  384x384  |  20   | 92.73 | 98.27 |     [config](configs_backup/densenet/dense121_colon.py)      |
+| EfficientNet-B5 |  384x384  |  20   | 94.04 | 98.58 |    [config](configs_backup/efficientnet/eff-b5_colon.py)     |
+|     Swin-B      |  384x384  |  20   | 94.68 | 98.35 | [config](configs_backup/swin_transformer/swin-base_colon.py) |
 
 #### Endo
 
 |    Backbone     | Crop Size | Epoch |  mAP  |  AUC  |                        Config                        |
 | :-------------: | :-------: | :---: | :---: | :---: | :--------------------------------------------------: |
-|   DenseNet121   |  384x384  |  20   | 41.13 | 80.19 |     [config](configs/densenet/dense121_endo.py)      |
-| EfficientNet-B5 |  384x384  |  20   | 36.95 | 78.23 |    [config](configs/efficientnet/eff-b5_endo.py)     |
-|     Swin-B      |  384x384  |  20   | 41.38 | 79.42 | [config](configs/swin_transformer/swin-base_endo.py) |
+|   DenseNet121   |  384x384  |  20   | 41.13 | 80.19 |     [config](configs_backup/densenet/dense121_endo.py)      |
+| EfficientNet-B5 |  384x384  |  20   | 36.95 | 78.23 |    [config](configs_backup/efficientnet/eff-b5_endo.py)     |
+|     Swin-B      |  384x384  |  20   | 41.38 | 79.42 | [config](configs_backup/swin_transformer/swin-base_endo.py) |
 
 ## 🎫 License
 
@@ -140,8 +136,8 @@ The `images` in each dataset folder contains its images, which could be achieved
 In this repository we provided many config files for fully supervised task (only uses 20% of original traning set, please check out the `.txt` files which split dataset)
 and few-shot learning task.
 
-The config files of fully supervised transfer learning task are stored at `./configs/densenet`, `./configs/efficientnet`, `./configs/vit-base` and
-`./configs/swin_transformer` folders, respectively. The config files of few-shot learning task are stored at `./configs/ablation_exp` and `./configs/vit-b16_vpt` folders.
+The config files of fully supervised transfer learning task are stored at `./configs_backup/densenet`, `./configs_backup/efficientnet`, `./configs_backup/vit-base` and
+`./configs_backup/swin_transformer` folders, respectively. The config files of few-shot learning task are stored at `./configs_backup/ablation_exp` and `./configs_backup/vit-b16_vpt` folders.
 
 For the training and testing, you can directly use commands below to train and test the model:
 
@@ -149,7 +145,7 @@ For the training and testing, you can directly use commands below to train and t
 # you need to export path in terminal so the `custom_imports` in config would work
 export PYTHONPATH=$PWD:$PYTHONPATH
 # Training
-# you can choose a config file like `configs/vit-b16_vpt/in21k-vitb16_vpt1_bs4_lr6e-4_1-shot_chest.py` to train its model
+# you can choose a config file like `configs_backup/vit-b16_vpt/in21k-vitb16_vpt1_bs4_lr6e-4_1-shot_chest.py` to train its model
 python tools/train.py $CONFIG
 
 # Evaluation
