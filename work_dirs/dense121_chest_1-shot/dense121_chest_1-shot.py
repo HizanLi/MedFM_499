@@ -1,3 +1,15 @@
+model = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='DenseNet',
+        arch='121',
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint='pretrain/densenet121_4xb256_in1k_20220426-07450f99.pth',
+            prefix='backbone')),
+    neck=dict(type='GlobalAveragePooling'),
+    head=dict(
+        type='MultiLabelLinearClsHead', num_classes=19, in_channels=1024))
 dataset_type = 'Chest19'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -35,7 +47,7 @@ data = dict(
     train=dict(
         type='Chest19',
         data_prefix='data/MedFMC_train/chest/images',
-        ann_file='data/MedFMC_train/chest/train_20.txt',
+        ann_file='data/MedFMC_train/chest/chest_1-shot_train_exp1.txt',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(
@@ -56,7 +68,7 @@ data = dict(
     val=dict(
         type='Chest19',
         data_prefix='data/MedFMC_train/chest/images',
-        ann_file='data/MedFMC_train/chest/val_20.txt',
+        ann_file='data/MedFMC_train/chest/chest_1-shot_val_exp1.txt',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(
@@ -92,34 +104,10 @@ data = dict(
             dict(type='Collect', keys=['img'])
         ]))
 evaluation = dict(interval=1, metric='mAP', save_best='auto')
-optim_wrapper = dict(
-    optimizer=dict(
-        type='AdamW',
-        lr=0.005,
-        weight_decay=0.05,
-        eps=1e-08,
-        betas=(0.9, 0.999)),
-    paramwise_cfg=dict(
-        norm_decay_mult=0.0,
-        bias_decay_mult=0.0,
-        flat_decay_mult=0.0,
-        custom_keys=dict({
-            '.absolute_pos_embed': dict(decay_mult=0.0),
-            '.relative_position_bias_table': dict(decay_mult=0.0)
-        })))
-param_scheduler = [
-    dict(
-        type='LinearLR',
-        start_factor=0.001,
-        by_epoch=True,
-        end=1,
-        convert_to_iter_based=True),
-    dict(type='CosineAnnealingLR', eta_min=1e-05, by_epoch=True, begin=1)
-]
-train_cfg = dict(by_epoch=True, val_interval=1, max_epochs=200)
-val_cfg = dict()
-test_cfg = dict()
-auto_scale_lr = dict(base_batch_size=1024)
+optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(policy='CosineAnnealing', min_lr=0)
+runner = dict(type='EpochBasedRunner', max_epochs=20)
 checkpoint_config = dict(interval=1, max_keep_ckpts=1)
 log_config = dict(interval=5, hooks=[dict(type='TextLoggerHook')])
 dist_params = dict(backend='nccl')
@@ -133,29 +121,8 @@ custom_imports = dict(
         'medfmc.core.evaluation'
     ],
     allow_failed_imports=False)
-lr = 0.001
-vpl = 1
 dataset = 'chest'
-exp_num = 2
 nshot = 1
-run_name = 'eva02-b_1_bs4_lr0.001_1-shot_chest_exp2'
-work_dir = 'work_dirs/chest/1-shot/eva02-b_1_bs4_lr0.001_1-shot_chest_exp2'
-model = dict(
-    type='ImageClassifier',
-    backbone=dict(
-        type='PromptedViTEVA02',
-        prompt_length=1,
-        patch_size=14,
-        sub_ln=True,
-        final_norm=False,
-        out_type='avg_featmap',
-        arch='b',
-        img_size=448,
-        init_cfg=dict(
-            type='Pretrained',
-            checkpoint=
-            'https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-base-p14_in21k-pre_in21k-medft_3rdparty_in1k-448px_20230505-5cd4d87f.pth',
-            prefix='backbone')),
-    neck=None,
-    head=dict(type='MultiLabelLinearClsHead', num_classes=19, in_channels=768))
+exp_num = 1
+work_dir = './work_dirs/dense121_chest_1-shot'
 gpu_ids = [0]
