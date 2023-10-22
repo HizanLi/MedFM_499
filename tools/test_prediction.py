@@ -1,75 +1,55 @@
-import mmcv
 import numpy as np
 import os
-import torch
 from argparse import ArgumentParser
-from mmcls.apis import inference_model, init_model
-from mmcls.datasets.pipelines import Compose
-from mmcv.parallel import collate, scatter
-
-
-def inference_model(model, img):
-    """Inference image(s) with the classifier.
-
-    Args:
-        model (nn.Module): The loaded classifier.
-        img (str/ndarray): The image filename or loaded image.
-
-    Returns:
-        result (dict): The classification results that contains
-            `class_name`, `pred_label` and `pred_score`.
-    """
-    cfg = model.cfg
-    device = next(model.parameters()).device  # model device
-    # build the data pipeline
-    if isinstance(img, str):
-        if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
-            cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
-        data = dict(img_info=dict(filename=img), img_prefix=None)
-    else:
-        if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
-            cfg.data.test.pipeline.pop(0)
-        data = dict(img=img)
-    test_pipeline = Compose(cfg.data.test.pipeline)
-    data = test_pipeline(data)
-    data = collate([data], samples_per_gpu=1)
-    if next(model.parameters()).is_cuda:
-        # scatter to specified GPU
-        data = scatter(data, [device])[0]
-
-    # forward the model
-    with torch.no_grad():
-        scores = model(return_loss=False, **data)
-    return scores
+from mmpretrain import ImageClassificationInferencer
+from mmengine.fileio import list_dir_or_file, list_from_file
 
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('img_file', help='Names of test image files')
-    parser.add_argument('img_path', help='Path of test image files')
     parser.add_argument('config', help='Config file')
     parser.add_argument('checkpoint', help='Checkpoint file')
+    parser.add_argument('images', help='Names of test images, could a image list file or a folder')
     parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     parser.add_argument(
-        '--output-prediction',
+        '--out',
         help='where to save prediction in csv file',
-        default=False)
+        default="result.csv")
+    parser.add_argument(
+        '--batch-size',
+        help='the batch-size of the inferencer',
+        type=int,
+        default=1)
     args = parser.parse_args()
+    
+    # get all the inference image list
+    if os.path.isfile(args.images) and args.images.endswith(".txt"):
+        images = [image for image in list_from_file(args.images)]
+    elif os.path.isdir(args.images):
+        images = [
+            os.path.join(args.images, image)
+            for image in list_dir_or_file(args.images, suffix='.png', list_dir=False)
+        ]
+    else:
+        raise ValueError("please set `args.images` a '.txt' file or a folder.")
 
     # build the model from a config file and a checkpoint file
-    model = init_model(args.config, args.checkpoint, device=args.device)
+    inferencer = ImageClassificationInferencer(
+                                    model=args.config, 
+                                    pretrained=args.checkpoint, 
+                                    device=args.device)
+
+    results = inferencer(images, batch_size=args.batch_size)
+
     # test a bundle of images
-    if args.output_prediction:
-        with open(args.output_prediction, 'w') as f_out:
-            for line in open(args.img_file, 'r'):
-                image_name = line.split('\n')[0]
-                file = os.path.join(args.img_path, image_name)
-                result = inference_model(model, file)[0]
-                f_out.write(image_name)
-                for j in range(len(result)):
-                    f_out.write(',' + str(np.around(result[j], 8)))
-                f_out.write('\n')
+    with open(args.out, 'w') as f_out:
+        for image, res in zip(images, results):
+            print(os.path.basename(image), res['pred_label'])
+            f_out.write(os.path.basename(image))
+            for j in range(len(res['pred_scores'])):
+                f_out.write(',' + str(np.around(res['pred_scores'][j], 8)))
+            f_out.write('\n')
 
 
 if __name__ == '__main__':
