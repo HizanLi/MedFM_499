@@ -19,7 +19,6 @@ from mmengine.utils.dl_utils import TORCH_VERSION
 
 """
 
-
 def parse_args():
     """
     
@@ -83,28 +82,127 @@ def parse_args():
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
+    
     # When using PyTorch version >= 2.0.0, the `torch.distributed.launch`
     # will pass the `--local-rank` parameter to `tools/train.py` instead
     # of `--local_rank`.
     parser.add_argument('--local_rank', '--local-rank', type=int, default=0)
 
-    #-----------------------------------------------------------------------------------------#
-    parser.add_argument('--remove_timestamp',
-                        action='store_true', help='Remove timestamp from work_dir')
-    parser.add_argument('--exp_suffix', type=str,
-                        default='', help='Suffix for experiment name')
-    parser.add_argument('--lr', default=None, type=float,
-                        help='Override the learning rate from the config file.')
-    parser.add_argument('--exp_num', type=int, default=None,
-                        help='Experiment number for data_anns')
-    parser.add_argument('--train_bs', type=int, default=None,
-                        help='Training batch size.')
-    parser.add_argument('--seed', type=int, default=None,
-                        help='The seed for training.')
-    #-----------------------------------------------------------------------------------------#
+    ########################################################################################
+    parser.add_argument('--lr', default=None, type=float, help='Override the learning rate from the config file.') 
+    parser.add_argument('--batch_size', type=int, default=None, help='Training batch size.') 
+    parser.add_argument('--seed', type=int, default=1, help='The seed for training.')
+    ########################################################################################
 
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
 
     return args
+
+
+def merge_args(cfg, args):
+    """Merge CLI arguments to config."""
+    if args.no_validate:
+        cfg.val_cfg = None
+        cfg.val_dataloader = None
+        cfg.val_evaluator = None
+
+    cfg.launcher = args.launcher
+
+    # work_dir is determined in this priority: CLI > segment in file > filename
+    if args.work_dir is not None:
+        # update configs according to CLI args if args.work_dir is not None
+        cfg.work_dir = args.work_dir
+    elif cfg.get('work_dir', None) is None:
+        # use config filename as default work_dir if cfg.work_dir is None
+        cfg.work_dir = osp.join('./work_dirs',
+                                osp.splitext(osp.basename(args.config))[0])
+
+    # enable automatic-mixed-precision training
+    if args.amp is True:
+        optim_wrapper = cfg.optim_wrapper.get('type', 'OptimWrapper')
+        assert optim_wrapper in ['OptimWrapper', 'AmpOptimWrapper'], \
+            '`--amp` is not supported custom optimizer wrapper type ' \
+            f'`{optim_wrapper}.'
+        cfg.optim_wrapper.type = 'AmpOptimWrapper'
+        cfg.optim_wrapper.setdefault('loss_scale', 'dynamic')
+
+    # resume training
+    if args.resume == 'auto':
+        cfg.resume = True
+        cfg.load_from = None
+    elif args.resume is not None:
+        cfg.resume = True
+        cfg.load_from = args.resume
+
+    # enable auto scale learning rate
+    if args.auto_scale_lr:
+        cfg.auto_scale_lr.enable = True
+
+    # set dataloader args
+    default_dataloader_cfg = ConfigDict(
+        pin_memory=True,
+        persistent_workers=True,
+        collate_fn=dict(type='default_collate'),
+    )
+    if digit_version(TORCH_VERSION) < digit_version('1.8.0'):
+        default_dataloader_cfg.persistent_workers = False
+
+    def set_default_dataloader_cfg(cfg, field):
+        if cfg.get(field, None) is None:
+            return
+        dataloader_cfg = deepcopy(default_dataloader_cfg)
+        dataloader_cfg.update(cfg[field])
+        cfg[field] = dataloader_cfg
+        if args.no_pin_memory:
+            cfg[field]['pin_memory'] = False
+        if args.no_persistent_workers:
+            cfg[field]['persistent_workers'] = False
+
+    set_default_dataloader_cfg(cfg, 'train_dataloader')
+    set_default_dataloader_cfg(cfg, 'val_dataloader')
+    set_default_dataloader_cfg(cfg, 'test_dataloader')
+
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
+
+    if args.lr is not None:
+        cfg.optim_wrapper.optimizer.lr = args.lr
+
+    if args.seed is not None:
+        cfg.randomness = dict(seed=args.seed)
+
+    if args.batch_size is not None:
+        cfg.batch_size = args.batch_size
+        cfg.train_dataloader.batch_size = args.batch_size
+
+
+
+    return cfg
+
+
+def main():
+    args = parse_args()
+    print(str(args))
+    print("A---------------------------------------------------------------------------A")
+
+    # load config
+    cfg = Config.fromfile(args.config)
+    print(str(cfg))
+    print("B---------------------------------------------------------------------------B")
+
+    # merge cli arguments to config
+    cfg = merge_args(cfg, args)
+    print(str(cfg))
+    print("C---------------------------------------------------------------------------C")
+    
+    # build the runner from config
+    runner = Runner.from_cfg(cfg)
+    
+    # start training
+    runner.train()
+
+
+if __name__ == '__main__':
+    main()
