@@ -2,11 +2,10 @@
 import argparse
 import os
 import os.path as osp
-import re
 from copy import deepcopy
-from datetime import datetime
 
 from mmengine.config import Config, ConfigDict, DictAction
+from mmengine.registry import RUNNERS
 from mmengine.runner import Runner
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
@@ -15,21 +14,17 @@ from mmengine.utils.dl_utils import TORCH_VERSION
 """
     Adapted from:
     https://github.com/pytorch/examples/blob/main/vae/main.py
-    https://github.com/open-mmlab/mmdetection/blob/main/tools/train.py
-
+    https://github.com/open-mmlab/mmpretrain/blob/main/tools/train.py
+    
 """
 
 def parse_args():
-    """
-    
-    The parse_args() function is designed to parse command-line arguments provided when running the script. 
-    Its purpose is to allow users to specify various configuration options when training a model. 
-    
-    """
-        
     parser = argparse.ArgumentParser(description='Train a model')
+    
     parser.add_argument('config', help='train config file path')
+    
     parser.add_argument('--work-dir', help='the dir to save logs and models')
+    
     parser.add_argument(
         '--resume',
         nargs='?',
@@ -82,17 +77,25 @@ def parse_args():
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
-    
     # When using PyTorch version >= 2.0.0, the `torch.distributed.launch`
     # will pass the `--local-rank` parameter to `tools/train.py` instead
     # of `--local_rank`.
     parser.add_argument('--local_rank', '--local-rank', type=int, default=0)
-
-    ########################################################################################
-    parser.add_argument('--lr', default=None, type=float, help='Override the learning rate from the config file.') 
-    parser.add_argument('--batch_size', type=int, default=None, help='Training batch size.') 
-    parser.add_argument('--seed', type=int, default=1, help='The seed for training.')
-    ########################################################################################
+    
+    parser.add_argument('--lr', 
+        default=None, 
+        type=float, 
+        help='Override the learning rate from the config file.') 
+    
+    parser.add_argument('--batch_size',
+        type=int, 
+        default=None,
+        help='Training batch size.') 
+    
+    parser.add_argument('--seed', 
+        type=int, 
+        default=1, 
+        help='The seed for training.')
 
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -121,10 +124,6 @@ def merge_args(cfg, args):
 
     # enable automatic-mixed-precision training
     if args.amp is True:
-        optim_wrapper = cfg.optim_wrapper.get('type', 'OptimWrapper')
-        assert optim_wrapper in ['OptimWrapper', 'AmpOptimWrapper'], \
-            '`--amp` is not supported custom optimizer wrapper type ' \
-            f'`{optim_wrapper}.'
         cfg.optim_wrapper.type = 'AmpOptimWrapper'
         cfg.optim_wrapper.setdefault('loss_scale', 'dynamic')
 
@@ -149,6 +148,16 @@ def merge_args(cfg, args):
     if digit_version(TORCH_VERSION) < digit_version('1.8.0'):
         default_dataloader_cfg.persistent_workers = False
 
+    if args.lr is not None:
+        cfg.optim_wrapper.optimizer.lr = args.lr
+
+    if args.seed is not None:
+        cfg.randomness = dict(seed=args.seed)
+
+    if args.batch_size is not None:
+        cfg.batch_size = args.batch_size
+        cfg.train_dataloader.batch_size = args.batch_size
+
     def set_default_dataloader_cfg(cfg, field):
         if cfg.get(field, None) is None:
             return
@@ -167,39 +176,30 @@ def merge_args(cfg, args):
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    if args.lr is not None:
-        cfg.optim_wrapper.optimizer.lr = args.lr
-
-    if args.seed is not None:
-        cfg.randomness = dict(seed=args.seed)
-
-    if args.batch_size is not None:
-        cfg.batch_size = args.batch_size
-        cfg.train_dataloader.batch_size = args.batch_size
-
-
-
     return cfg
 
 
 def main():
     args = parse_args()
-    print(str(args))
     print("A---------------------------------------------------------------------------A")
 
     # load config
     cfg = Config.fromfile(args.config)
-    print(str(cfg))
     print("B---------------------------------------------------------------------------B")
 
     # merge cli arguments to config
     cfg = merge_args(cfg, args)
-    print(str(cfg))
     print("C---------------------------------------------------------------------------C")
-    
+
     # build the runner from config
-    runner = Runner.from_cfg(cfg)
-    
+    if 'runner_type' not in cfg:
+        # build the default runner
+        runner = Runner.from_cfg(cfg)
+    else:
+        # build customized runner from the registry
+        # if 'runner_type' is set in the cfg
+        runner = RUNNERS.build(cfg)
+
     # start training
     runner.train()
 
