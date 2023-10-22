@@ -9,6 +9,10 @@ data_preprocessor = dict(
     to_rgb=True
 )
 
+"""
+    https://mmdetection.readthedocs.io/en/v2.19.1/tutorials/data_pipeline.html
+    https://mmpretrain.readthedocs.io/en/stable/api/data_process.html
+"""
 #---------------------------------------------------------------#
 train_pipeline = [
     dict(type='LoadImageFromFile'),

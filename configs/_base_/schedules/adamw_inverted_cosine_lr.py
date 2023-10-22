@@ -1,7 +1,12 @@
 optimizer = dict(betas=(0.9, 0.999), eps=1e-08, lr=1e-6, type='AdamW', weight_decay=0.01)
 
 optim_wrapper = dict(
-    optimizer=optimizer,
+    optimizer=dict(
+        lr=1e-6, 
+        betas=(0.9, 0.999), 
+        eps=1e-08, 
+        type='AdamW', 
+        weight_decay=0.01),
     paramwise_cfg=dict(
         norm_decay_mult=0.0,
         bias_decay_mult=0.0,

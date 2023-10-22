@@ -1,6 +1,8 @@
 # optimizer
+# In ClassyVision, the lr is set to 0.003 for bs4096.
+# In this implementation(bs2048), lr = 0.003 / 4096 * (32bs * 64gpus) = 0.0015
 optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=0.003, weight_decay=0.3),
+    optimizer=dict(type='AdamW', lr=0.0015, weight_decay=0.3),
     # specific to vit pretrain
     paramwise_cfg=dict(custom_keys={
         '.cls_token': dict(decay_mult=0.0),
@@ -9,24 +11,22 @@ optim_wrapper = dict(
 )
 
 # learning policy
+warmup_epochs = 15  # about 10000 iterations for ImageNet-1k
 param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
-        start_factor=1e-4,
+        start_factor=1e-3,
         by_epoch=True,
-        begin=0,
-        end=30,
+        end=warmup_epochs,
         # update by iter
         convert_to_iter_based=True),
     # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
-        T_max=270,
+        eta_min=1e-5,
         by_epoch=True,
-        begin=30,
-        end=300,
-    )
+        begin=warmup_epochs)
 ]
 
 # train, val, test setting
@@ -36,4 +36,4 @@ test_cfg = dict()
 
 # NOTE: `auto_scale_lr` is for automatically scaling LR,
 # based on the actual training batch size.
-auto_scale_lr = dict(base_batch_size=4096)
+auto_scale_lr = dict(base_batch_size=2048)

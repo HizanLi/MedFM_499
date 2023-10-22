@@ -1,3 +1,9 @@
+"""
+imagenet_bs1024_adamw_swin.py
+from mmpretrain
+
+"""
+
 # for batch in each gpu is 128, 8 gpu
 # lr = 5e-4 * 128 * 8 / 512 = 0.001
 optim_wrapper = dict(

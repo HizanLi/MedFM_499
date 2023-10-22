@@ -7,6 +7,11 @@ data_preprocessor = dict(
     to_rgb=True, # convert image from BGR to RGB
 )
 
+"""
+    https://mmdetection.readthedocs.io/en/v2.19.1/tutorials/data_pipeline.html
+    https://mmpretrain.readthedocs.io/en/stable/api/data_process.html
+"""
+#---------------------------------------------------------------#
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=384, backend='pillow', interpolation='bicubic'),
@@ -15,6 +20,7 @@ train_pipeline = [
     dict(type='RandomFlip', prob=0.5, direction='vertical'),
     dict(type='PackInputs'),
 ]
+#---------------------------------------------------------------#
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),

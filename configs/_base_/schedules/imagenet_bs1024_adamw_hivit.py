@@ -3,7 +3,7 @@
 optim_wrapper = dict(
     optimizer=dict(
         type='AdamW',
-        lr=1e-3,
+        lr=5e-4 * 1024 / 512,
         weight_decay=0.05,
         eps=1e-8,
         betas=(0.9, 0.999)),
@@ -12,7 +12,7 @@ optim_wrapper = dict(
         bias_decay_mult=0.0,
         flat_decay_mult=0.0,
         custom_keys={
-            '.absolute_pos_embed': dict(decay_mult=0.0),
+            '.pos_embed': dict(decay_mult=0.0),
             '.relative_position_bias_table': dict(decay_mult=0.0)
         }),
 )
@@ -24,15 +24,15 @@ param_scheduler = [
         type='LinearLR',
         start_factor=1e-3,
         by_epoch=True,
-        end=1,
+        end=20,
         # update by iter
         convert_to_iter_based=True),
     # main learning rate scheduler
-    dict(type='CosineAnnealingLR', eta_min=1e-5, by_epoch=True, begin=1)
+    dict(type='CosineAnnealingLR', eta_min=1e-5, by_epoch=True, begin=20)
 ]
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, val_interval=1, max_epochs=200)
+train_cfg = dict(by_epoch=True, max_epochs=300, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 

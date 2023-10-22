@@ -4,10 +4,10 @@ optim_wrapper = dict(
 
 # learning policy
 param_scheduler = dict(
-    type='MultiStepLR', by_epoch=True, milestones=[30, 60, 90], gamma=0.1)
+    type='MultiStepLR', by_epoch=True, milestones=[40, 80, 120], gamma=0.1)
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
+train_cfg = dict(by_epoch=True, max_epochs=140, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
