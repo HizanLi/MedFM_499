@@ -1,48 +1,66 @@
 # dataset settings
 dataset_type = 'Colon'
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+data_preprocessor = dict(
+    num_classes=2,
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    to_rgb=True, # convert image from BGR to RGB
+)
+
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        size=384,
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='RandomResizedCrop', scale=384, backend='pillow', interpolation='bicubic'),
+    dict(type='ColorJitter', hue=0.3, brightness=0.4, contrast=0.4, saturation=0.4),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='RandomFlip', prob=0.5, direction='vertical'),
+    dict(type='PackInputs'),
 ]
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=384, backend='pillow', interpolation='bicubic'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='Resize', scale=384, backend='pillow', interpolation='bicubic'),
+    dict(type='PackInputs'),
 ]
-data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=4,
-    train=dict(
+
+train_dataloader = dict(
+    batch_size=2,
+    num_workers=2,
+    dataset=dict(
         type=dataset_type,
         data_prefix='data/MedFMC_train/colon/images',
         ann_file='data/MedFMC_train/colon/train_20.txt',
-        pipeline=train_pipeline),
-    val=dict(
+        pipeline=train_pipeline,),
+    sampler=dict(type='DefaultSampler', shuffle=True),
+)
+
+val_dataloader = dict(
+    batch_size=4,
+    num_workers=2,
+    dataset=dict(
         type=dataset_type,
         data_prefix='data/MedFMC_train/colon/images',
         ann_file='data/MedFMC_train/colon/val_20.txt',
         pipeline=test_pipeline),
-    test=dict(
-        # replace `data/val` with `data/test` for standard test
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
+
+test_dataloader = dict(
+    batch_size=4,
+    num_workers=2,
+    dataset=dict(
         type=dataset_type,
         data_prefix='data/MedFMC_train/colon/images',
         ann_file='data/MedFMC_train/colon/test_WithLabel.txt',
-        pipeline=test_pipeline))
-evaluation = dict(
-    interval=1,
-    metric='accuracy',
-    metric_options={'topk': 1},
-    save_best='auto')
+        pipeline=test_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
+
+train_evaluator = [
+    dict(type='AveragePrecision'),
+    dict(type='Accuracy', topk=(1,)),
+    dict(type='SingleLabelMetric', items=['precision', 'recall']),
+    dict(type='Aggregate'),
+    dict(type='AUC')
+]
+val_evaluator = train_evaluator
+test_evaluator = train_evaluator

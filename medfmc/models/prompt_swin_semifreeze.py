@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
 from typing import Sequence
+from random import random
 
 import torch
 import torch.nn as nn
@@ -657,7 +658,7 @@ class PromptedSwinBlockSequence(SwinBlockSequence):
 
 
 @MODELS.register_module()
-class PromptedSwinTransformer(SwinTransformer):
+class SemiFreezePromptedSwinTransformer(SwinTransformer):
 
     def __init__(
             self,
@@ -730,7 +731,8 @@ class PromptedSwinTransformer(SwinTransformer):
             embed_dims.append(stage.out_channels)
 
         for param in self.parameters():
-            param.requires_grad = False
+            if random() >= 0.5:
+                param.requires_grad = False
 
         self.prompt_layers = [0] if prompt_layers is None else prompt_layers
         prompt = torch.empty(len(self.prompt_layers), prompt_length, self.embed_dims)
@@ -793,7 +795,7 @@ class PromptedSwinTransformer(SwinTransformer):
         # Names of some parameters in has been changed.
         version = local_metadata.get('version', None)
         if (version is None or version < 2) and \
-                self.__class__ is PromptedSwinTransformer:
+                self.__class__ is SemiFreezePromptedSwinTransformer:
             final_stage_num = len(self.stages) - 1
             state_dict_keys = list(state_dict.keys())
             for k in state_dict_keys:
@@ -802,7 +804,7 @@ class PromptedSwinTransformer(SwinTransformer):
                     state_dict[convert_key] = state_dict[k]
                     del state_dict[k]
         if (version is None or version < 3) and \
-                self.__class__ is PromptedSwinTransformer:
+                self.__class__ is SemiFreezePromptedSwinTransformer:
             state_dict_keys = list(state_dict.keys())
             for k in state_dict_keys:
                 if 'attn_mask' in k:
