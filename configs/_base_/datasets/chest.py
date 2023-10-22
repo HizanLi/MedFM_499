@@ -6,10 +6,10 @@ data_preprocessor = dict(
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
     # convert image from BGR to RGB
-    to_rgb=True,
-    to_onehot=True,
+    to_rgb=True
 )
 
+#---------------------------------------------------------------#
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='NumpyToPIL', to_rgb=True),
@@ -19,12 +19,14 @@ train_pipeline = [
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackInputs'),
 ]
-
+#---------------------------------------------------------------#
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=384, backend='pillow', interpolation='bicubic'),
-    dict(type='PackInputs'),
+    dict(type='Resize', size=384, backend='pillow', interpolation='bicubic'),
+    dict(type='Normalize', **data_preprocessor),
+    dict(type='ImageToTensor', keys=['img']),
+    dict(type='Collect', keys=['img'])
 ]
 
 train_dataloader = dict(

@@ -10,6 +10,11 @@ from mmengine.evaluator import DumpResults
 from mmengine.registry import RUNNERS
 from mmengine.runner import Runner
 
+"""
+    Adapted from:
+    https://github.com/open-mmlab/mmpretrain/blob/main/tools/test.py
+    
+"""
 
 def parse_args():
     parser = argparse.ArgumentParser(
