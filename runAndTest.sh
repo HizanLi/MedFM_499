@@ -1,7 +1,7 @@
 # you need to export path in terminal so the `custom_imports` in config would work
 export PYTHONPATH=$PWD:$PYTHONPATH
 # Training
-python tools/train.py configs/densenet121/1-shot_chest.py
+python tools/train.py configs/swin_large/1-shot_chest.py
 
 # Evaluation
 # Endo and ChestDR utilize mAP as metric
