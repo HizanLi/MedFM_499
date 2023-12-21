@@ -1,8 +1,8 @@
 _base_ = [
-    '../datasets/chest.py',
-    '../schedules/imagenet_bs1024_adamw_swin.py',
+    '../_base_/datasets/chest.py',
+    '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
     'mmpretrain::_base_/default_runtime.py',
-    '../custom_imports.py'
+    '../_base_/custom_imports.py'
 ]
 
 lr = 1e-6
@@ -99,7 +99,7 @@ param_scheduler = [
 
 visualizer = dict(type='Visualizer', vis_backends=[dict(type='TensorboardVisBackend')])
 
-train_cfg = dict(by_epoch=True, val_interval=10, max_epochs=500)
+train_cfg = dict(by_epoch=True, val_interval=10, max_epochs=20)
 
 default_hooks = dict(
     checkpoint=dict(interval=250, max_keep_ckpts=1, save_best="Aggregate", rule="greater"),

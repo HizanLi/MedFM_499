@@ -1,8 +1,8 @@
 _base_ = [
-    '../datasets/chest.py',
-    '../schedules/adamw_inverted_cosine_lr.py',
+    '../_base_/datasets/chest.py',
+    '../_base_/schedules/adamw_inverted_cosine_lr.py',
     'mmpretrain::_base_/default_runtime.py',
-    '../custom_imports.py',
+    '../_base_/custom_imports.py',
 ]
 
 lr = 1e-6
