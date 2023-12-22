@@ -2,6 +2,7 @@ export WORKDIR=/medfmc_exp
 cd $WORKDIR
 export PYTHONPATH=$PWD:$PYTHONPATH
 
+#20 epoch
 python tools/train.py configs/convnext/5-shot_colon.py
 
 python tools/train.py configs/resnet/5-shot_colon.py
@@ -13,6 +14,11 @@ python tools/train.py configs/efficientnetv2_large/5-shot_colon.py
 python tools/train.py configs/swin_v2_base/5-shot_colon.py
 
 python tools/train.py configs/swin_v2_large/5-shot_colon.py
+
+#50 epoch
+
+#100 epoch
+
 
 # python tools/train.py configs/resnet/5-shot_colon.py
 # Training
