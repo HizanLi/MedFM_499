@@ -102,7 +102,7 @@ param_scheduler = [
     dict(begin=1, by_epoch=True, eta_min=1e-05, type='CosineAnnealingLR'),
 ]
 
-train_cfg = dict(by_epoch=True, val_interval=15, max_epochs=20)
+train_cfg = dict(by_epoch=True, val_interval=5, max_epochs=20)
 val_cfg = dict()
 test_cfg = dict()
 

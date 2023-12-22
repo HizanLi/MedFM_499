@@ -99,7 +99,7 @@ param_scheduler = [
 
 visualizer = dict(type='Visualizer', vis_backends=[dict(type='TensorboardVisBackend')])
 
-train_cfg = dict(by_epoch=True, val_interval=10, max_epochs=20)
+train_cfg = dict(by_epoch=True, val_interval=5, max_epochs=20)
 
 default_hooks = dict(
     checkpoint=dict(interval=250, max_keep_ckpts=1, save_best="Aggregate", rule="greater"),

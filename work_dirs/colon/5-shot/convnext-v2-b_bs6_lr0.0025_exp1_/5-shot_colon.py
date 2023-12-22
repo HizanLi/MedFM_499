@@ -146,7 +146,7 @@ test_pipeline = [
     dict(type='PackInputs'),
 ]
 train_bs = 6
-train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=15)
+train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=5)
 train_dataloader = dict(
     batch_size=6,
     collate_fn=dict(type='default_collate'),

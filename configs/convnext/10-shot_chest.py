@@ -52,7 +52,7 @@ test_dataloader = dict(
 
 visualizer = dict(type='Visualizer', vis_backends=[dict(type='TensorboardVisBackend')])
 
-train_cfg = dict(by_epoch=True, val_interval=10, max_epochs=150)
+train_cfg = dict(by_epoch=True, val_interval=5, max_epochs=150)
 
 # runtime setting
 custom_hooks = [dict(type='EMAHook', momentum=1e-4, priority='ABOVE_NORMAL')]
