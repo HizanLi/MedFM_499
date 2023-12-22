@@ -12,7 +12,7 @@ val_bs = 96
 dataset = 'chest'
 model_name = 'convnext-v2-b'
 exp_num = 1
-nshot = 5
+nshot = 10
 
 run_name = f'{model_name}_bs{train_bs}_lr{lr}_exp{exp_num}_'
 work_dir = f'work_dirs/{dataset}/{nshot}-shot/{run_name}'

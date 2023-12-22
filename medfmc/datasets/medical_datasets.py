@@ -27,7 +27,11 @@ class Chest19(CustomDataset):
         with open(self.ann_file) as f:
             samples = [x.strip() for x in f.readlines()]
             for item in samples:
+                print("Start")
+                print(item)
+                print("end")
                 filename, imglabel = item.split(' ')
+                print("here")
                 gt_label = np.asarray(
                     list(map(int, imglabel.split(','))), dtype=np.int8)
 

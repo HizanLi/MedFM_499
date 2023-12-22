@@ -7,7 +7,7 @@ _base_ = [
 ]
 
 lr = 2.5e-3
-train_bs = 8
+train_bs = 6
 val_bs = 96
 dataset = 'colon'
 model_name = 'convnext-v2-b'
@@ -54,7 +54,7 @@ test_dataloader = dict(
 visualizer = dict(type='Visualizer', vis_backends=[dict(type='TensorboardVisBackend')])
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, val_interval=15, max_epochs=250)
+train_cfg = dict(by_epoch=True, val_interval=15, max_epochs=20)
 
 # runtime setting
 custom_hooks = [dict(type='EMAHook', momentum=1e-4, priority='ABOVE_NORMAL')]

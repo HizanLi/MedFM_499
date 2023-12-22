@@ -6,34 +6,28 @@ _base_ = [
 ]
 
 # Pre-trained Checkpoint Path
-checkpoint = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth'  # noqa
+checkpoint = 'https://download.openmmlab.com/mmclassification/v0/densenet/densenet121_4xb256_in1k_20220426-07450f99.pth'  # noqa
 
 lr = 1e-6
-train_bs = 4
-val_bs = 256
+train_bs = 1
+val_bs = 2
 dataset = 'colon'
-model_name = 'resnet101'
-exp_num = 4
-nshot = 5
+model_name = 'densenet121'
+exp_num = 1
+nshot = 1
 
 run_name = f'{model_name}_bs{train_bs}_lr{lr}_exp{exp_num}_'
 work_dir = f'work_dirs/{dataset}/{nshot}-shot/{run_name}'
 
 model = dict(
-    type='ImageClassifier',
     backbone=dict(
-        type='ResNet',
-        depth=101,
-        num_stages=4,
-        out_indices=(3, ),
-        style='pytorch',
-        init_cfg=dict(
-            type='Pretrained', checkpoint=checkpoint, prefix='backbone')),
+        init_cfg=dict(type='Pretrained', checkpoint=checkpoint, prefix='backbone')
+    ),
     neck=None,
     head=dict(
         type='CSRAClsHead',
         num_classes=2,
-        in_channels=2048,
+        in_channels=1024,
         num_heads=1,
         lam=0.1,
         loss=dict(type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)))
@@ -41,7 +35,7 @@ model = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=448, crop_ratio_range=(0.7, 1.0)),
-    #dict(type='ColorJitter', hue=0.3, brightness=0.4, contrast=0.4, saturation=0.4),
+    dict(type='ColorJitter', hue=0.3, brightness=0.4, contrast=0.4, saturation=0.4),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='RandomFlip', prob=0.5, direction='vertical'),
     dict(type='PackInputs'),
@@ -77,7 +71,7 @@ test_dataloader = dict(
 )
 
 default_hooks = dict(
-    checkpoint=dict(type='CheckpointHook', interval=250, max_keep_ckpts=1, save_best="accuracy/top1", rule="greater"),
+    checkpoint=dict(type='CheckpointHook', interval=250, max_keep_ckpts=1, save_best="Aggregate", rule="greater"),
     logger=dict(interval=10),
 )
 
@@ -102,7 +96,7 @@ param_scheduler = [
     dict(begin=1, by_epoch=True, eta_min=1e-05, type='CosineAnnealingLR'),
 ]
 
-train_cfg = dict(by_epoch=True, val_interval=15, max_epochs=20)
+train_cfg = dict(by_epoch=True, val_interval=50, max_epochs=20)
 val_cfg = dict()
 test_cfg = dict()
 

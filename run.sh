@@ -2,20 +2,19 @@ export WORKDIR=/medfmc_exp
 cd $WORKDIR
 export PYTHONPATH=$PWD:$PYTHONPATH
 
-python tools/train.py configs/swin_v2_base/10-shot_chest.py
+python tools/train.py configs/convnext/5-shot_colon.py
 
-python tools/train.py configs/swin_v2_tiny/10-shot_chest.py
+python tools/train.py configs/resnet/5-shot_colon.py
 
-python tools/train.py configs/swin_v2_small/10-shot_chest.py
+python tools/train.py configs/densenet121/5-shot_colon.py
 
-python tools/train.py configs/swin_v2_large/10-shot_chest.py
+python tools/train.py configs/efficientnetv2_large/5-shot_colon.py
 
+python tools/train.py configs/swin_v2_base/5-shot_colon.py
 
+python tools/train.py configs/swin_v2_large/5-shot_colon.py
 
-# python tools/train.py configs/resnet/10-shot_colon.py --batch_size=2
-
-# python tools/train.py configs/resnet/10-shot_colon.py --batch_size=4
-
+# python tools/train.py configs/resnet/5-shot_colon.py
 # Training
 
 # Evaluation

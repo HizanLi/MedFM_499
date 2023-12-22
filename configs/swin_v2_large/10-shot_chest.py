@@ -6,8 +6,8 @@ _base_ = [
 ]
 
 lr = 1e-6
-train_bs = 4
-val_bs = 32
+train_bs = 2
+val_bs = 24
 dataset = 'chest'
 model_name = 'swin_v2_large'
 exp_num = 1
@@ -37,8 +37,7 @@ model = dict(
         type='LinearClsHead',
         num_classes=19,
         in_channels=1536,
-        num_heads=1,
-        lam=0.1,
+
         loss=dict(type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)),
     type='ImageClassifier')
 
