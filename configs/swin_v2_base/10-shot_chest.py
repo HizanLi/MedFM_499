@@ -6,7 +6,7 @@ _base_ = [
 ]
 
 lr = 1e-6
-train_bs = 2
+train_bs = 4
 val_bs = 32
 dataset = 'chest'
 model_name = 'swin_v2_base'
@@ -95,7 +95,7 @@ param_scheduler = [
 
 visualizer = dict(type='Visualizer', vis_backends=[dict(type='TensorboardVisBackend')])
 
-train_cfg = dict(by_epoch=True, val_interval=10, max_epochs=125)
+train_cfg = dict(by_epoch=True, val_interval=10, max_epochs=20)
 
 default_hooks = dict(
     checkpoint=dict(interval=250, max_keep_ckpts=1, save_best="Aggregate", rule="greater"),

@@ -13,6 +13,10 @@ exp_num = 1
 nshot = 10
 run_name = f'clip-b_{nshot}-shot_ptokens-{vpl}_{dataset}'
 
+
+work_dir = f'work_dirs/clip-b/exp{exp_num}/{run_name}'
+
+
 data_preprocessor = dict(
     num_classes=2,
     # RGB format normalization parameters
@@ -98,5 +102,3 @@ default_hooks = dict(
     checkpoint = dict(type='CheckpointHook', interval=1, max_keep_ckpts=1, save_best="auto"),
     logger=dict(interval=50),
 )
-
-work_dir = f'work_dirs/clip-b/exp{exp_num}/{run_name}'

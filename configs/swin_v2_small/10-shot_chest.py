@@ -7,10 +7,10 @@ _base_ = [
 ]
 
 lr = 1e-6
-train_bs = 2
+train_bs = 4
 val_bs = 32
 dataset = 'chest'
-model_name = 'swinv2-t'
+model_name = 'swin_v2_small'
 exp_num = 1
 nshot = 10
 seed = 2049

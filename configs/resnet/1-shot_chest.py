@@ -1,69 +1,68 @@
 _base_ = [
     '../_base_/datasets/chest.py',
-    '../_base_/schedules/chest.py',
+    '../_base_/schedules/adamw_inverted_cosine_lr.py',
     'mmpretrain::_base_/default_runtime.py',
-    '../_base_/custom_imports.py'
+    '../_base_/custom_imports.py',
 ]
 
-lr = 1e-6
-train_bs = 4
-val_bs = 32
-dataset = 'chest'
-model_name = 'swin_v2_large'
-exp_num = 1
-nshot = 10
-seed = 2049
-randomness = dict(seed=seed)
+# Pre-trained Checkpoint Path
+checkpoint = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth'  # noqa
 
-run_name = f'{model_name}_bs{train_bs}_lr{lr}_exp{exp_num}'
+lr = 1e-6
+train_bs = 16
+val_bs = 64
+dataset = 'chest'
+model_name = 'resnet101'
+exp_num = 1
+nshot = 1
+
+run_name = f'{model_name}_bs{train_bs}_lr{lr}_exp{exp_num}_'
 work_dir = f'work_dirs/{dataset}/{nshot}-shot/{run_name}'
 
 model = dict(
-    _scope_='mmpretrain',
+    type='ImageClassifier',
     backbone=dict(
-        arch='large',
-        drop_path_rate=0.2,
-        img_size=384,
-        init_cfg=dict(
-            checkpoint=
-            'https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-large-w24_in21k-pre_3rdparty_in1k-384px_20220803-3b36c165.pth',
-            prefix='backbone',
-            type='Pretrained'),
-        pretrained_window_sizes=[12, 12, 12, 6],
-        type='SwinTransformerV2',
-        window_size=[24, 24, 24, 12]),
+        type='ResNet',
+        depth=101,
+        num_stages=4,
+        out_indices=(3,),
+        style='pytorch',
+        init_cfg=dict(type='Pretrained', checkpoint=checkpoint, prefix='backbone')
+    ),
     neck=None,
     head=dict(
-        type='LinearClsHead',
+        type='CSRAClsHead',
         num_classes=19,
-        in_channels=1536,
+        in_channels=2048,
         num_heads=1,
         lam=0.1,
-        loss=dict(type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)),
-    type='ImageClassifier')
+        loss=dict(type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)))
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='NumpyToPIL', to_rgb=True),
     dict(type='torchvision/RandomAffine', degrees=(-15, 15), translate=(0.05, 0.05), fill=128),
     dict(type='PILToNumpy', to_bgr=True),
-    dict(type='RandomResizedCrop', scale=384, crop_ratio_range=(0.9, 1.0), backend='pillow', interpolation='bicubic'),
+    dict(type='RandomResizedCrop', scale=448, crop_ratio_range=(0.9, 1.0), backend='pillow', interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=384, backend='pillow', interpolation='bicubic'),
-    dict(type='PackInputs'),
+    dict(type='Resize', scale=448),
+    dict(
+        type='PackInputs',
+        # `gt_label_difficult` is needed for VOC evaluation
+        meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+                   'scale_factor', 'flip', 'flip_direction',
+                   'gt_label_difficult')),
 ]
 
 train_dataloader = dict(
     batch_size=train_bs,
-    dataset=dict(
-        ann_file=f'data/MedFMC_train/{dataset}/{dataset}_{nshot}-shot_train_exp{exp_num}.txt',
-        pipeline=train_pipeline
-    )
+    dataset=dict(ann_file=f'data/MedFMC_train/{dataset}/{dataset}_{nshot}-shot_train_exp{exp_num}.txt',
+                 pipeline=train_pipeline)
 )
 
 val_dataloader = dict(
@@ -75,7 +74,7 @@ val_dataloader = dict(
 test_dataloader = dict(
     batch_size=8,
     dataset=dict(ann_file=f'data/MedFMC_train/{dataset}/test_WithLabel.txt',
-                 pipeline=test_pipeline),
+                 pipeline=test_pipeline)
 )
 
 optimizer = dict(betas=(0.9, 0.999), eps=1e-08, lr=lr, type='AdamW', weight_decay=0.05)
@@ -97,11 +96,13 @@ param_scheduler = [
     dict(begin=1, by_epoch=True, eta_min=1e-05, type='CosineAnnealingLR'),
 ]
 
-visualizer = dict(type='Visualizer', vis_backends=[dict(type='TensorboardVisBackend')])
-
-train_cfg = dict(by_epoch=True, val_interval=10, max_epochs=20)
-
 default_hooks = dict(
-    checkpoint=dict(interval=250, max_keep_ckpts=1, save_best="Aggregate", rule="greater"),
+    checkpoint=dict(type='CheckpointHook', interval=250, max_keep_ckpts=1, save_best="auto", rule="greater"),
     logger=dict(interval=10),
 )
+
+visualizer = dict(type='Visualizer', vis_backends=[dict(type='TensorboardVisBackend')])
+
+train_cfg = dict(by_epoch=True, val_interval=25, max_epochs=20)
+
+randomness = dict(seed=0)

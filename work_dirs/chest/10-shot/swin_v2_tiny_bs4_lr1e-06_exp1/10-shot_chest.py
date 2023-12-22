@@ -24,11 +24,12 @@ dataset_type = 'Chest19'
 default_hooks = dict(
     checkpoint=dict(
         _scope_='mmpretrain',
-        interval=1,
+        interval=250,
         max_keep_ckpts=1,
-        save_best='auto',
+        rule='greater',
+        save_best='Aggregate',
         type='CheckpointHook'),
-    logger=dict(_scope_='mmpretrain', interval=50, type='LoggerHook'),
+    logger=dict(_scope_='mmpretrain', interval=10, type='LoggerHook'),
     param_scheduler=dict(_scope_='mmpretrain', type='ParamSchedulerHook'),
     sampler_seed=dict(_scope_='mmpretrain', type='DistSamplerSeedHook'),
     timer=dict(_scope_='mmpretrain', type='IterTimerHook'),
@@ -43,36 +44,52 @@ exp_num = 1
 launcher = 'none'
 load_from = None
 log_level = 'INFO'
-lr = 0.001
+lr = 1e-06
 model = dict(
+    _scope_='mmpretrain',
     backbone=dict(
-        arch='b',
-        img_size=384,
+        arch='tiny',
+        drop_path_rate=0.2,
+        img_size=256,
         init_cfg=dict(
             checkpoint=
-            'https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_laion2b-in12k-pre_3rdparty_in1k-384px_20221220-84ed0cc0.pth',
+            'https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-tiny-w16_3rdparty_in1k-256px_20220803-9651cdd7.pth',
             prefix='backbone',
             type='Pretrained'),
-        out_type='cls_token',
-        patch_size=16,
-        pre_norm=True,
-        prompt_length=1,
-        type='PromptedViT'),
-    head=dict(in_channels=768, num_classes=19, type='MultiLabelLinearClsHead'),
+        pretrained_window_sizes=[
+            12,
+            12,
+            12,
+            6,
+        ],
+        type='SwinTransformerV2',
+        window_size=[
+            16,
+            16,
+            16,
+            8,
+        ]),
+    head=dict(
+        in_channels=768,
+        lam=0.1,
+        loss=dict(loss_weight=1.0, type='CrossEntropyLoss', use_sigmoid=True),
+        num_classes=19,
+        num_heads=1,
+        type='CSRAClsHead'),
     neck=None,
     type='ImageClassifier')
-nshot = 1
+model_name = 'swin_v2_tiny'
+nshot = 10
 optim_wrapper = dict(
-    clip_grad=dict(max_norm=1.0),
     optimizer=dict(
         betas=(
             0.9,
             0.999,
         ),
         eps=1e-08,
-        lr=0.001,
+        lr=1e-06,
         type='AdamW',
-        weight_decay=0.01),
+        weight_decay=0.05),
     paramwise_cfg=dict(
         bias_decay_mult=0.0,
         custom_keys=dict({
@@ -85,18 +102,18 @@ optimizer = dict(
     betas=(
         0.9,
         0.999,
-    ), eps=1e-08, lr=1e-06, type='AdamW', weight_decay=0.01)
+    ), eps=1e-08, lr=1e-06, type='AdamW', weight_decay=0.05)
 param_scheduler = [
     dict(by_epoch=True, end=1, start_factor=1, type='LinearLR'),
     dict(begin=1, by_epoch=True, eta_min=1e-05, type='CosineAnnealingLR'),
 ]
 randomness = dict(seed=1)
 resume = False
-run_name = 'clip-b_1_bs4_lr0.001_1-shot_chest_exp1'
+run_name = 'swin_v2_tiny_bs4_lr1e-06_exp1'
 seed = 2049
 test_cfg = dict()
 test_dataloader = dict(
-    batch_size=4,
+    batch_size=8,
     collate_fn=dict(type='default_collate'),
     dataset=dict(
         ann_file='data/MedFMC_train/chest/test_WithLabel.txt',
@@ -105,11 +122,9 @@ test_dataloader = dict(
             dict(type='LoadImageFromFile'),
             dict(
                 backend='pillow',
-                edge='short',
                 interpolation='bicubic',
-                scale=384,
-                type='ResizeEdge'),
-            dict(crop_size=384, type='CenterCrop'),
+                scale=256,
+                type='Resize'),
             dict(type='PackInputs'),
         ],
         type='Chest19'),
@@ -126,21 +141,16 @@ test_evaluator = [
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        backend='pillow',
-        edge='short',
-        interpolation='bicubic',
-        scale=384,
-        type='ResizeEdge'),
-    dict(crop_size=384, type='CenterCrop'),
+    dict(backend='pillow', interpolation='bicubic', scale=256, type='Resize'),
     dict(type='PackInputs'),
 ]
-train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=1)
+train_bs = 4
+train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=10)
 train_dataloader = dict(
     batch_size=4,
     collate_fn=dict(type='default_collate'),
     dataset=dict(
-        ann_file='data/MedFMC_train/chest/chest_1-shot_train_exp1.txt',
+        ann_file='data/MedFMC_train/chest/chest_10-shot_train_exp1.txt',
         data_prefix='data/MedFMC_train/chest/images',
         pipeline=[
             dict(type='LoadImageFromFile'),
@@ -164,7 +174,7 @@ train_dataloader = dict(
                     1.0,
                 ),
                 interpolation='bicubic',
-                scale=384,
+                scale=256,
                 type='RandomResizedCrop'),
             dict(direction='horizontal', prob=0.5, type='RandomFlip'),
             dict(type='PackInputs'),
@@ -203,27 +213,26 @@ train_pipeline = [
             1.0,
         ),
         interpolation='bicubic',
-        scale=384,
+        scale=256,
         type='RandomResizedCrop'),
     dict(direction='horizontal', prob=0.5, type='RandomFlip'),
     dict(type='PackInputs'),
 ]
+val_bs = 32
 val_cfg = dict()
 val_dataloader = dict(
-    batch_size=8,
+    batch_size=32,
     collate_fn=dict(type='default_collate'),
     dataset=dict(
-        ann_file='data/MedFMC_train/chest/chest_1-shot_val_exp1.txt',
+        ann_file='data/MedFMC_train/chest/chest_10-shot_val_exp1.txt',
         data_prefix='data/MedFMC_train/chest/images',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(
                 backend='pillow',
-                edge='short',
                 interpolation='bicubic',
-                scale=384,
-                type='ResizeEdge'),
-            dict(crop_size=384, type='CenterCrop'),
+                scale=256,
+                type='Resize'),
             dict(type='PackInputs'),
         ],
         type='Chest19'),
@@ -247,5 +256,4 @@ visualizer = dict(
     vis_backends=[
         dict(type='TensorboardVisBackend'),
     ])
-vpl = 1
-work_dir = 'work_dirs/chest/1-shot/clip-b_1_bs4_lr0.001_1-shot_chest_exp1'
+work_dir = 'work_dirs/chest/10-shot/swin_v2_tiny_bs4_lr1e-06_exp1'

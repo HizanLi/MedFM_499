@@ -48,12 +48,12 @@ lr = 1e-06
 model = dict(
     _scope_='mmpretrain',
     backbone=dict(
-        arch='small',
+        arch='base',
         drop_path_rate=0.2,
-        img_size=256,
+        img_size=384,
         init_cfg=dict(
             checkpoint=
-            'https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-tiny-w16_3rdparty_in1k-256px_20220803-9651cdd7.pth',
+            'https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-base-w24_in21k-pre_3rdparty_in1k-384px_20220803-44eb70f8.pth',
             prefix='backbone',
             type='Pretrained'),
         pretrained_window_sizes=[
@@ -64,13 +64,13 @@ model = dict(
         ],
         type='SwinTransformerV2',
         window_size=[
-            16,
-            16,
-            16,
-            8,
+            24,
+            24,
+            24,
+            12,
         ]),
     head=dict(
-        in_channels=768,
+        in_channels=1024,
         lam=0.1,
         loss=dict(loss_weight=1.0, type='CrossEntropyLoss', use_sigmoid=True),
         num_classes=19,
@@ -78,7 +78,7 @@ model = dict(
         type='CSRAClsHead'),
     neck=None,
     type='ImageClassifier')
-model_name = 'swinv2-t'
+model_name = 'swin_v2_base'
 nshot = 10
 optim_wrapper = dict(
     optimizer=dict(
@@ -109,7 +109,7 @@ param_scheduler = [
 ]
 randomness = dict(seed=1)
 resume = False
-run_name = 'swinv2-t_bs2_lr1e-06_exp1'
+run_name = 'swin_v2_base_bs4_lr1e-06_exp1'
 seed = 2049
 test_cfg = dict()
 test_dataloader = dict(
@@ -123,9 +123,28 @@ test_dataloader = dict(
             dict(
                 backend='pillow',
                 interpolation='bicubic',
-                scale=256,
+                size=384,
                 type='Resize'),
-            dict(type='PackInputs'),
+            dict(
+                mean=[
+                    123.675,
+                    116.28,
+                    103.53,
+                ],
+                num_classes=19,
+                std=[
+                    58.395,
+                    57.12,
+                    57.375,
+                ],
+                to_rgb=True,
+                type='Normalize'),
+            dict(keys=[
+                'img',
+            ], type='ImageToTensor'),
+            dict(keys=[
+                'img',
+            ], type='Collect'),
         ],
         type='Chest19'),
     num_workers=2,
@@ -141,13 +160,13 @@ test_evaluator = [
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(backend='pillow', interpolation='bicubic', scale=256, type='Resize'),
+    dict(backend='pillow', interpolation='bicubic', scale=384, type='Resize'),
     dict(type='PackInputs'),
 ]
-train_bs = 2
+train_bs = 4
 train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=10)
 train_dataloader = dict(
-    batch_size=2,
+    batch_size=4,
     collate_fn=dict(type='default_collate'),
     dataset=dict(
         ann_file='data/MedFMC_train/chest/chest_10-shot_train_exp1.txt',
@@ -174,7 +193,7 @@ train_dataloader = dict(
                     1.0,
                 ),
                 interpolation='bicubic',
-                scale=256,
+                scale=384,
                 type='RandomResizedCrop'),
             dict(direction='horizontal', prob=0.5, type='RandomFlip'),
             dict(type='PackInputs'),
@@ -213,7 +232,7 @@ train_pipeline = [
             1.0,
         ),
         interpolation='bicubic',
-        scale=256,
+        scale=384,
         type='RandomResizedCrop'),
     dict(direction='horizontal', prob=0.5, type='RandomFlip'),
     dict(type='PackInputs'),
@@ -231,9 +250,28 @@ val_dataloader = dict(
             dict(
                 backend='pillow',
                 interpolation='bicubic',
-                scale=256,
+                size=384,
                 type='Resize'),
-            dict(type='PackInputs'),
+            dict(
+                mean=[
+                    123.675,
+                    116.28,
+                    103.53,
+                ],
+                num_classes=19,
+                std=[
+                    58.395,
+                    57.12,
+                    57.375,
+                ],
+                to_rgb=True,
+                type='Normalize'),
+            dict(keys=[
+                'img',
+            ], type='ImageToTensor'),
+            dict(keys=[
+                'img',
+            ], type='Collect'),
         ],
         type='Chest19'),
     num_workers=2,
@@ -256,4 +294,4 @@ visualizer = dict(
     vis_backends=[
         dict(type='TensorboardVisBackend'),
     ])
-work_dir = 'work_dirs/chest/10-shot/swinv2-t_bs2_lr1e-06_exp1'
+work_dir = 'work_dirs/chest/10-shot/swin_v2_base_bs4_lr1e-06_exp1'
